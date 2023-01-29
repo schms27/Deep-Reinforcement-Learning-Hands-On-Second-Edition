@@ -9,8 +9,8 @@ dependencies:
 - torchvision=0.8.1
 - ignite=0.4.2
 - atari_py=0.2.6
-- tensorboard=2.4.0
-- tensorboardX=2.1
+- tensorboard=2.11.2
+- tensorboardX=2.5.1
 - pip
 - pip:
   - gym==0.17.3

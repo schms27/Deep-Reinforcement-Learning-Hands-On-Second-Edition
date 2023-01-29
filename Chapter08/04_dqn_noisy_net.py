@@ -11,6 +11,8 @@ from ignite.engine import Engine
 
 from lib import common, dqn_extra
 
+from lib.util.wrappers import ObsToFloat
+
 NAME = "04_noisy"
 NOISY_SNR_EVERY_ITERS = 100
 
@@ -18,24 +20,27 @@ NOISY_SNR_EVERY_ITERS = 100
 if __name__ == "__main__":
     random.seed(common.SEED)
     torch.manual_seed(common.SEED)
-    params = common.HYPERPARAMS['pong']
+    params = common.HYPERPARAMS['cartpole']
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda")
+    parser.add_argument("--cuda", default=True, action="store_true", help="Enable cuda")
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
 
     env = gym.make(params.env_name)
-    env = ptan.common.wrappers.wrap_dqn(env)
+    if len(env.observation_space.shape) != 1:
+        env = ptan.common.wrappers.wrap_dqn(env)
+        net = dqn_extra.NoisyDQN(env.observation_space.shape, env.action_space.n).to(device)
+    else:
+        net = dqn_extra.NoisyLinearDQN(env.observation_space.shape, env.action_space.n).to(device)
+    
     env.seed(common.SEED)
-
-    net = dqn_extra.NoisyDQN(env.observation_space.shape, env.action_space.n).to(device)
 
     tgt_net = ptan.agent.TargetNet(net)
     selector = ptan.actions.ArgmaxActionSelector()
     agent = ptan.agent.DQNAgent(net, selector, device=device)
 
     exp_source = ptan.experience.ExperienceSourceFirstLast(
-        env, agent, gamma=params.gamma)
+        env, agent, gamma=params.gamma, steps_delta=4)
     buffer = ptan.experience.ExperienceReplayBuffer(
         exp_source, buffer_size=params.replay_size)
     optimizer = optim.Adam(net.parameters(), lr=params.learning_rate)

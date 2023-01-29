@@ -16,9 +16,9 @@ DEFAULT_N_STEPS = 4
 if __name__ == "__main__":
     random.seed(common.SEED)
     torch.manual_seed(common.SEED)
-    params = common.HYPERPARAMS['pong']
+    params = common.HYPERPARAMS['cartpole']
     parser = argparse.ArgumentParser()
-    parser.add_argument("--cuda", default=False, action="store_true",
+    parser.add_argument("--cuda", default=True, action="store_true",
                         help="Enable cuda")
     parser.add_argument("-n", type=int, default=DEFAULT_N_STEPS,
                         help="Steps to do on Bellman unroll")
