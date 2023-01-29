@@ -11,8 +11,6 @@ from ignite.engine import Engine
 
 from lib import common, dqn_extra
 
-from lib.util.wrappers import ObsToFloat
-
 NAME = "04_noisy"
 NOISY_SNR_EVERY_ITERS = 100
 
