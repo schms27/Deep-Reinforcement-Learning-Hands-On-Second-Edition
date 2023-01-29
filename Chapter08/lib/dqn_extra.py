@@ -101,9 +101,9 @@ class NoisyLinearDQN(nn.Module):
             nn.ReLU(),
             self.noisy_layers[1],
             nn.ReLU(),
-            self.noisy_layers[2],
+            nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(128, n_actions)
+            nn.Linear(64, n_actions)
         )
 
     def forward(self, x):

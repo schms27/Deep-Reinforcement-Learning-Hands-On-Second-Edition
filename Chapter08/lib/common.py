@@ -34,15 +34,15 @@ HYPERPARAMS = {
         'env_name':         "CartPole-v1",
         'stop_reward':      300.0,
         'run_name':         'cartpole',
-        'replay_size':      100000,
-        'replay_initial':   10000,
-        'target_net_sync':  200,
-        'epsilon_frames':   10**5,
+        'replay_size':      10000,
+        'replay_initial':   500,
+        'target_net_sync':  100,
+        'epsilon_frames':   10000,
         'epsilon_start':    1.0,
-        'epsilon_final':    0.02,
+        'epsilon_final':    1.0,
         'learning_rate':    0.0001,
         'gamma':            0.99,
-        'batch_size':       64
+        'batch_size':       32
     }),
     'breakout-small': SimpleNamespace(**{
         'env_name':         "BreakoutNoFrameskip-v4",
