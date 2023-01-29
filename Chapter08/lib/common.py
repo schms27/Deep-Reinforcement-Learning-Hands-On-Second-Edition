@@ -30,6 +30,20 @@ HYPERPARAMS = {
         'gamma':            0.99,
         'batch_size':       32
     }),
+    'cartpole': SimpleNamespace(**{
+        'env_name':         "CartPole-v1",
+        'stop_reward':      300.0,
+        'run_name':         'cartpole',
+        'replay_size':      100000,
+        'replay_initial':   10000,
+        'target_net_sync':  200,
+        'epsilon_frames':   10**5,
+        'epsilon_start':    1.0,
+        'epsilon_final':    0.02,
+        'learning_rate':    0.0001,
+        'gamma':            0.99,
+        'batch_size':       64
+    }),
     'breakout-small': SimpleNamespace(**{
         'env_name':         "BreakoutNoFrameskip-v4",
         'stop_reward':      500.0,

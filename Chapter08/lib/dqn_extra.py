@@ -50,7 +50,7 @@ class NoisyLinear(nn.Linear):
 
 
 class NoisyFactorizedLinear(nn.Linear):
-    """
+    """ 
     NoisyNet layer with factorized gaussian noise
 
     N.B. nn.Linear already initializes weight and bias to
@@ -85,6 +85,35 @@ class NoisyFactorizedLinear(nn.Linear):
         noise_v = torch.mul(eps_in, eps_out)
         v = self.weight + self.sigma_weight * noise_v
         return F.linear(input, v, bias)
+
+
+class NoisyLinearDQN(nn.Module):
+    def __init__(self, input_shape, n_actions):
+        super(NoisyLinearDQN, self).__init__()
+
+        self.noisy_layers = [
+            NoisyLinear(input_shape[0], 128),
+            NoisyLinear(128, 128),
+            NoisyLinear(128, 128)
+        ]
+        self.fc = nn.Sequential(
+            self.noisy_layers[0],
+            nn.ReLU(),
+            self.noisy_layers[1],
+            nn.ReLU(),
+            self.noisy_layers[2],
+            nn.ReLU(),
+            nn.Linear(128, n_actions)
+        )
+
+    def forward(self, x):
+        return self.fc(x.float())
+
+    def noisy_layers_sigma_snr(self):
+        return [
+            ((layer.weight ** 2).mean().sqrt() / (layer.sigma_weight ** 2).mean().sqrt()).item()
+            for layer in self.noisy_layers
+        ]
 
 
 class NoisyDQN(nn.Module):
