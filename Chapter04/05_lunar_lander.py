@@ -12,6 +12,7 @@ import torch.optim as optim
 HIDDEN_SIZE = 128
 BATCH_SIZE = 16
 PERCENTILE = 70
+DEVICE = torch.device("cuda")
 
 
 class Net(nn.Module):
@@ -38,9 +39,9 @@ def iterate_batches(env, net, batch_size):
     obs = env.reset()
     sm = nn.Softmax(dim=1)
     while True:
-        obs_v = torch.FloatTensor([obs])
+        obs_v = torch.FloatTensor([obs]).to(DEVICE)
         act_probs_v = sm(net(obs_v))
-        act_probs = act_probs_v.data.numpy()[0]
+        act_probs = act_probs_v.cpu().data.numpy()[0]
         action = np.random.choice(len(act_probs), p=act_probs)
         next_obs, reward, is_done, _ = env.step(action)
         episode_reward += reward
@@ -71,21 +72,21 @@ def filter_batch(batch, percentile):
         train_obs.extend(map(lambda step: step.observation, steps))
         train_act.extend(map(lambda step: step.action, steps))
 
-    train_obs_v = torch.FloatTensor(train_obs)
-    train_act_v = torch.LongTensor(train_act)
+    train_obs_v = torch.FloatTensor(train_obs).to(DEVICE)
+    train_act_v = torch.LongTensor(train_act).to(DEVICE)
     return train_obs_v, train_act_v, reward_bound, reward_mean
 
 
 if __name__ == "__main__":
-    env = gym.make("CartPole-v0")
+    env = gym.make("LunarLander-v2")
     # env = gym.wrappers.Monitor(env, directory="mon", force=True)
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
-    net = Net(obs_size, HIDDEN_SIZE, n_actions)
+    net = Net(obs_size, HIDDEN_SIZE, n_actions).to(DEVICE)
     objective = nn.CrossEntropyLoss()
     optimizer = optim.Adam(params=net.parameters(), lr=0.01)
-    writer = SummaryWriter(comment="-cartpole")
+    writer = SummaryWriter(comment="-lunarlander")
 
     for iter_no, batch in enumerate(iterate_batches(
             env, net, BATCH_SIZE)):

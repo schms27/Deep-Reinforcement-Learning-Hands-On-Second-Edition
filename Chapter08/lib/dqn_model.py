@@ -3,6 +3,18 @@ import torch.nn as nn
 
 import numpy as np
 
+class DQNLinear(nn.Module):
+    def __init__(self, input_shape, n_actions):
+        super(DQNLinear, self).__init__()
+
+        self.net = nn.Sequential(
+            nn.Linear(input_shape[0], 128),
+            nn.ReLU(),
+            nn.Linear(128, n_actions)
+        )
+
+    def forward(self, x):
+        return self.net(x)
 
 class DQN(nn.Module):
     def __init__(self, input_shape, n_actions):

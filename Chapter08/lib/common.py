@@ -44,6 +44,20 @@ HYPERPARAMS = {
         'gamma':            0.99,
         'batch_size':       32
     }),
+    'lunarlander': SimpleNamespace(**{
+        'env_name':         "LunarLander-v2",
+        'stop_reward':      200.0,
+        'run_name':         'lunarlander',
+        'replay_size':      10000,
+        'replay_initial':   500,
+        'target_net_sync':  100,
+        'epsilon_frames':   10000,
+        'epsilon_start':    1.0,
+        'epsilon_final':    0.05,
+        'learning_rate':    0.0001,
+        'gamma':            0.99,
+        'batch_size':       32
+    }),
     'breakout-small': SimpleNamespace(**{
         'env_name':         "BreakoutNoFrameskip-v4",
         'stop_reward':      500.0,
