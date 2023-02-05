@@ -137,8 +137,8 @@ if __name__ == "__main__":
 
     batch = []
 
-    with common.RewardTracker(writer, stop_reward=18) as tracker:
-        with ptan.common.utils.TBMeanTracker(writer, batch_size=10) as tb_tracker:
+    with common.RewardTracker(writer, stop_reward=200) as tracker:
+        with ptan.common.utils.TBMeanTracker(writer, batch_size=1000) as tb_tracker:
             for step_idx, exp in enumerate(exp_source):
                 batch.append(exp)
 
