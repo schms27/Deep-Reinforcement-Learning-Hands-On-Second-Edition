@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import comet_ml
 import gym
 import ptan
 import numpy as np
@@ -101,12 +102,31 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda", default=False, action="store_true", help="Enable cuda")
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
+    parser.add_argument("-m", "--max_games", default=5_000, help="Max number of games")
     args = parser.parse_args()
     device = torch.device("cuda" if args.cuda else "cpu")
 
     make_env = lambda: ptan.common.wrappers.wrap_dqn(gym.make("PongNoFrameskip-v4"))
     envs = [make_env() for _ in range(NUM_ENVS)]
-    writer = SummaryWriter(comment="-pong-a2c_" + args.name)
+
+    writer = SummaryWriter(
+        comet_config={
+            "disabled": False
+        },
+        comment="-pong-a2c_" + args.name
+    )
+    writer.add_hparams(
+        {
+            "gamma": GAMMA,
+            "lr": LEARNING_RATE,
+            "entropy_beta": ENTROPY_BETA,
+            "batch_size": BATCH_SIZE,
+            "number_of_envs": NUM_ENVS,
+            "reward_steps": REWARD_STEPS,
+            "clip_grad": CLIP_GRAD
+        },
+        metric_dict={}
+    )
 
     net = AtariA2C(envs[0].observation_space.shape, envs[0].action_space.n).to(device)
     print(net)
@@ -171,3 +191,7 @@ if __name__ == "__main__":
                 tb_tracker.track("grad_l2",         np.sqrt(np.mean(np.square(grads))), step_idx)
                 tb_tracker.track("grad_max",        np.max(np.abs(grads)), step_idx)
                 tb_tracker.track("grad_var",        np.var(grads), step_idx)
+
+                if len(tracker.total_rewards) > args.max_games:
+                    # early stopping...
+                    break
