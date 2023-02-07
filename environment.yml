@@ -15,10 +15,11 @@ dependencies:
 - python-dotenv=0.21.1
 - pip
 - pip:
-  - gym==0.17.3
+  - gym==0.23.0
   - opencv-python==4.4.0.46
   - nltk==3.5
   - pybullet==3.0.7
   - ptan==0.7
   - matplotlib
   - comet-ml==3.32.0 
+  - gym[box2d]
