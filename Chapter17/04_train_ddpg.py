@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import comet_ml
 import os
 import ptan
 import time
@@ -15,12 +16,13 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 
-ENV_ID = "MinitaurBulletEnv-v0"
+ENV_ID = "LunarLander-v2"
 GAMMA = 0.99
-BATCH_SIZE = 64
-LEARNING_RATE = 1e-4
-REPLAY_SIZE = 100000
-REPLAY_INITIAL = 10000
+BATCH_SIZE = 256
+AC_LEARNING_RATE = 1e-4
+CR_LEARNING_RATE = 5e-4
+REPLAY_SIZE = 30000
+REPLAY_INITIAL = 5000
 
 TEST_ITERS = 1000
 
@@ -53,8 +55,8 @@ if __name__ == "__main__":
     save_path = os.path.join("saves", "ddpg-" + args.name)
     os.makedirs(save_path, exist_ok=True)
 
-    env = gym.make(ENV_ID)
-    test_env = gym.make(ENV_ID)
+    env = gym.make(ENV_ID, continuous=True)
+    test_env = gym.make(ENV_ID, continuous=True)
 
     act_net = model.DDPGActor(
         env.observation_space.shape[0],
@@ -67,14 +69,33 @@ if __name__ == "__main__":
     tgt_act_net = ptan.agent.TargetNet(act_net)
     tgt_crt_net = ptan.agent.TargetNet(crt_net)
 
-    writer = SummaryWriter(comment="-ddpg_" + args.name)
+    writer = SummaryWriter( 
+        comet_config={
+            "disabled": False
+        },
+        comment="-ddpg_" + args.name
+        )
+    writer.add_hparams(
+        {
+            "gamma": GAMMA,
+            "lr_actor": AC_LEARNING_RATE,
+            "lr_critic": CR_LEARNING_RATE,
+            "batch_size": BATCH_SIZE,
+            "replay_inital": REPLAY_INITIAL,
+            "replay_size": REPLAY_SIZE,
+            "test_iterations": TEST_ITERS
+        },
+        metric_dict={}
+    )
     agent = model.AgentDDPG(act_net, device=device)
     exp_source = ptan.experience.ExperienceSourceFirstLast(
         env, agent, gamma=GAMMA, steps_count=1)
+    #buffer = ptan.experience.PrioReplayBuffer(
+    #    exp_source, REPLAY_SIZE, PRIO_REPLAY_ALPHA)
     buffer = ptan.experience.ExperienceReplayBuffer(
         exp_source, buffer_size=REPLAY_SIZE)
-    act_opt = optim.Adam(act_net.parameters(), lr=LEARNING_RATE)
-    crt_opt = optim.Adam(crt_net.parameters(), lr=LEARNING_RATE)
+    act_opt = optim.Adam(act_net.parameters(), lr=AC_LEARNING_RATE)
+    crt_opt = optim.Adam(crt_net.parameters(), lr=CR_LEARNING_RATE)
 
     frame_idx = 0
     best_reward = None

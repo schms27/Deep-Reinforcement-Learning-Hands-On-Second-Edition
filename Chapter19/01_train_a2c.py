@@ -16,7 +16,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 
-ENV_ID = "HalfCheetahBulletEnv-v0"
+ENV_ID = "LunarLander-v2" # "HalfCheetahBulletEnv-v0"
 GAMMA = 0.99
 REWARD_STEPS = 5
 BATCH_SIZE = 32

@@ -13,9 +13,9 @@
             "console": "integratedTerminal",
             "args": [
                 "--cuda",
-                "--name", "lunarlander"
+                "--name", "lunarlander-continuous"
             ],
-            "justMyCode": true
+            "justMyCode": false
         }
     ]
 }

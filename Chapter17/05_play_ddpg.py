@@ -36,6 +36,7 @@ if __name__ == "__main__":
         action = mu_v.squeeze(dim=0).data.numpy()
         action = np.clip(action, -1, 1)
         obs, reward, done, _ = env.step(action)
+        env.render()
         total_reward += reward
         total_steps += 1
         if done:

@@ -15,14 +15,15 @@ import torch.optim as optim
 from lib import common
 
 GAMMA = 0.99
-LEARNING_RATE = 0.0005 #0.01 #0.001
-ENTROPY_BETA = 0.25#0.01 
-BATCH_SIZE = 256#64 #32
+LEARNING_RATE = 1e-4 #0.01 #0.001
+ENTROPY_BETA = 0.15#0.01 
+BATCH_SIZE = 64#64 #32
 NUM_ENVS = 50 #ev. weniger
 
 REWARD_STEPS = 8 #10 #8
-CLIP_GRAD = 0.9 #0.9 #0.1
-BODY_HIDDEN_NEURONS = 512
+CLIP_GRAD = 0.5 #0.9 #0.1
+BODY_HIDDEN_NEURONS = 64
+HEAD_HIDDEN_NEURONS = 64
 
 
 class LinearA2C(nn.Module):
@@ -38,15 +39,15 @@ class LinearA2C(nn.Module):
 
         conv_out_size = self._get_conv_out(input_shape)
         self.policy = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
+            nn.Linear(conv_out_size, HEAD_HIDDEN_NEURONS),
             nn.ReLU(),
-            nn.Linear(512, n_actions)
+            nn.Linear(HEAD_HIDDEN_NEURONS, n_actions)
         )
 
         self.value = nn.Sequential(
-            nn.Linear(conv_out_size, 512),
+            nn.Linear(conv_out_size, HEAD_HIDDEN_NEURONS),
             nn.ReLU(),
-            nn.Linear(512, 1)
+            nn.Linear(HEAD_HIDDEN_NEURONS, 1)
         )
 
     def _get_conv_out(self, shape):
@@ -122,7 +123,8 @@ if __name__ == "__main__":
             "number_of_envs": NUM_ENVS,
             "reward_steps": REWARD_STEPS,
             "clip_grad": CLIP_GRAD,
-            "body_hidden_neurons": BODY_HIDDEN_NEURONS
+            "body_hidden_neurons": BODY_HIDDEN_NEURONS,
+            "heads_hidden_neurons": HEAD_HIDDEN_NEURONS
         },
         metric_dict={}
     )
@@ -133,12 +135,12 @@ if __name__ == "__main__":
     agent = ptan.agent.PolicyAgent(lambda x: net(x)[0], apply_softmax=True, device=device)
     exp_source = ptan.experience.ExperienceSourceFirstLast(envs, agent, gamma=GAMMA, steps_count=REWARD_STEPS)
 
-    optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE, eps=1e-3)
+    optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)#, eps=1e-3)
 
     batch = []
 
     with common.RewardTracker(writer, stop_reward=200) as tracker:
-        with ptan.common.utils.TBMeanTracker(writer, batch_size=1000) as tb_tracker:
+        with ptan.common.utils.TBMeanTracker(writer, batch_size=100) as tb_tracker:
             for step_idx, exp in enumerate(exp_source):
                 batch.append(exp)
 
